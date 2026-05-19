@@ -13,29 +13,29 @@ export default function PostList() {
   // 스크롤 감지를 위한 Ref
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const fetchPosts = async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/posts?page=${page}&limit=10`);
-      const data: PostResponse = await response.json();
-
-      if (data.items.length === 0) {
-        setHasMore(false);
-      } else {
-        setPosts((prev) => [...prev, ...data.items]);
-        setPage((prev) => (data.nextPage ? data.nextPage : prev));
-        if (!data.nextPage) setHasMore(false);
-      }
-    } catch (error) {
-      console.error("게시물을 불러오는 중 오류 발생:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchPosts = async () => {
+      if (loading || !hasMore) return;
+
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/posts?page=${page}&limit=10`);
+        const data: PostResponse = await response.json();
+
+        if (data.items.length === 0) {
+          setHasMore(false);
+        } else {
+          setPosts((prev) => [...prev, ...data.items]);
+          setPage((prev) => (data.nextPage ? data.nextPage : prev));
+          if (!data.nextPage) setHasMore(false);
+        }
+      } catch (error) {
+        console.error("게시물을 불러오는 중 오류 발생:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         // 대상(target)이 화면에 보이고, 로딩 중이 아닐 때 데이터 요청
@@ -51,9 +51,7 @@ export default function PostList() {
     }
 
     return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
+      observer.disconnect();
     };
   }, [loading, hasMore, page]);
 
